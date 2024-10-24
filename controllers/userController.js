@@ -1,7 +1,7 @@
-const User = require('../models/user');
+const User = require('../models/user.js');
 
 // Create
-const createNewUser = async (req, res) => {
+exports.createNewUser = async (req, res) => {
     try {
         const user = new User(req.body);
         await user.save();
@@ -12,7 +12,7 @@ const createNewUser = async (req, res) => {
 };
 
 // Read (get one)
-const getUserById = async (req, res) => {
+exports.getUserById = async (req, res) => {
     try {
         const user = await User.findById(req.params.id);
         if (!user) return res.status(404).send({ message: 'User not found' });
@@ -23,7 +23,7 @@ const getUserById = async (req, res) => {
 };
 
 // Read (get all)
-const getAllUsers = async (req, res) => {
+exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find();
         res.status(200).send(users);
@@ -33,7 +33,7 @@ const getAllUsers = async (req, res) => {
 };
 
 // Update
-const updateUser = async (req, res) => {
+exports.updateUser = async (req, res) => {
     try {
         const user = await User.findByIdAndUpdate(req.params.id, req.body, { new: true, runValidators: true });
         if (!user) return res.status(404).send({ message: 'User not found' });
@@ -44,7 +44,7 @@ const updateUser = async (req, res) => {
 };
 
 // Delete
-const deleteUser = async (req, res) => {
+exports.deleteUser = async (req, res) => {
     try {
         const user = await User.findByIdAndDelete(req.params.id);
         if (!user) return res.status(404).send({ message: 'User not found' });
@@ -53,5 +53,3 @@ const deleteUser = async (req, res) => {
         res.status(500).send({ error: 'Error deleting user', details: error });
     }
 };
-
-module.exports = { createNewUser, getUserById, getAllUsers, updateUser, deleteUser };

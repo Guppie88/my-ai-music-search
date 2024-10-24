@@ -2,22 +2,10 @@
   "name": "mynodeproject",
   "version": "1.0.0",
   "main": "app.js",
-  "type": "module",
   "scripts": {
-    "test": "mocha"
+    "start": "node app.js",
+    "test": "jest"
   },
-  "keywords": [],
-  "author": "Andrea Sveinsdottir",
-  "license": "ISC",
-  "description": "ai musik motor",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/Guppie88/my-ai-music-search.git"
-  },
-  "bugs": {
-    "url": "https://github.com/Guppie88/my-ai-music-search/issues"
-  },
-  "homepage": "https://github.com/Guppie88/my-ai-music-search#readme",
   "dependencies": {
     "dotenv": "^16.4.5",
     "express": "^4.21.1",
@@ -25,8 +13,7 @@
     "mongoose": "^8.7.2"
   },
   "devDependencies": {
-    "chai": "^5.1.2",
-    "chai-http": "^5.1.1",
-    "mocha": "^10.7.3"
+    "jest": "^29.7.0",
+    "supertest": "^7.0.0"
   }
 }
