@@ -1,11 +1,13 @@
-const mongoose = require('mongoose');
 const express = require('express');
-const userRoutes = require('./routes/userRoutes');
-require('dotenv').config();
+const mongoose = require('mongoose');
+const userRoutes = require('./routes/userRoutes');  // Kontrollera att denna väg är korrekt
+
+require('dotenv').config();  // Ladda miljövariabler från .env
 
 const app = express();
 app.use(express.json());
 
+// Anslut till MongoDB
 mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mydatabase', {
     useNewUrlParser: true,
     useUnifiedTopology: true
@@ -13,11 +15,8 @@ mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/mydatabas
     .then(() => console.log('Connected to MongoDB!'))
     .catch((error) => console.error('MongoDB connection error:', error));
 
+// Lägg till dina rutter
 app.use('/users', userRoutes);
 
-const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
-});
-
+// Exportera appen för tester
 module.exports = app;
