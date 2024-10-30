@@ -1,7 +1,7 @@
 # IntelliJ IDEA
 # Default ignored files
 /shelf/
-/workspace.xml
+workspace.xml
 
 # Editor-based HTTP Client requests
 /httpRequests/
@@ -23,7 +23,7 @@
 # Mobile Tools for Java (J2ME)
 .mtj.tmp/
 
-# Package Files #
+# Package Files
 *.jar
 *.war
 *.nar
@@ -35,5 +35,10 @@
 # Virtual machine crash logs
 hs_err_pid*
 replay_pid*
+
+# Environment configuration files
+.env
+.env.test
+.env.production
 
 # End of Toptal Java Gitignore

@@ -4,9 +4,10 @@ import app from './app.js';
 
 dotenv.config();
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.NODE_ENV === 'test' ? process.env.TEST_PORT : process.env.PORT;
 const dbUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/mydatabase';
 
+// Anslut till MongoDB och starta servern
 mongoose.connect(dbUri)
     .then(() => {
         console.log('Connected to MongoDB!');

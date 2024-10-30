@@ -2,3 +2,4 @@ MONGODB_URI=mongodb://localhost:27017/mydatabase
 TEST_MONGODB_URI=mongodb://localhost:27017/testdatabase
 PORT=3000
 TEST_PORT=3001
+JWT_SECRET=e57c176a4a1b4db470197a088de7b40bd99473edad01677ea77d45868dd9f0b8
