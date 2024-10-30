@@ -1,3 +1,4 @@
 MONGODB_URI=mongodb://localhost:27017/mydatabase
+TEST_MONGODB_URI=mongodb://localhost:27017/testdatabase
 PORT=3000
-const PORT = process.env.TEST_PORT || 3001; // Använd en annan port
+TEST_PORT=3001

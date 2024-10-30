@@ -1,12 +1,13 @@
-const express = require('express');
-const { createNewUser, getUserById, getAllUsers, updateUser, deleteUser } = require('../controllers/userController.js');
+import express from 'express';
+import * as userController from '../controllers/userController.js';
+
 const router = express.Router();
 
 // CRUD-rutter för /users
-router.post('/', createNewUser);
-router.get('/', getAllUsers);
-router.get('/:id', getUserById);
-router.put('/:id', updateUser);
-router.delete('/:id', deleteUser);
+router.post('/', userController.createNewUser);
+router.get('/', userController.getAllUsers);
+router.get('/:id', userController.getUserById);
+router.put('/:id', userController.updateUser);
+router.delete('/:id', userController.deleteUser);
 
-module.exports = router;
+export { router };
