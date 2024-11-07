@@ -1,19 +1,26 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import * as userRoutes from './routes/userRoutes.js';
-import authRoutes from './auth/authRoutes.js'; // Importera auth-rutter
+function getRecommendations() {
+    const preferences = document.getElementById("preferences").value.split(",").map(p => p.trim());
 
-dotenv.config();
-
-const app = express();
-app.use(express.json());
-
-// Använd autentiseringsrutter
-app.use('/auth', authRoutes); // Exempel: /auth/register
-
-// Använd användarrutter
-app.use('/users', userRoutes.router);  // Notera användningen av .router här
-
-// Exportera appen för tester
-export default app;
-
+    fetch("/generate-recommendation", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ preferences })
+    })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error("Network response was not ok");
+            }
+            return response.json();
+        })
+        .then(data => {
+            const recommendationsDiv = document.getElementById("recommendations");
+            recommendationsDiv.innerHTML = "<h2>Recommendations:</h2>";
+            recommendationsDiv.innerHTML += "<ul>" + data.recommendations.map(rec => `<li>${rec}</li>`).join('') + "</ul>";
+        })
+        .catch(error => {
+            console.error("Error:", error);
+            document.getElementById("recommendations").innerHTML = "<p>There was an error retrieving recommendations.</p>";
+        });
+}
