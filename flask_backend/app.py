@@ -5,20 +5,32 @@ from flask_cors import CORS
 app = Flask(__name__, template_folder="templates", static_folder="static")
 CORS(app)
 
-# Ladda in datan från CSV-filerna
-artists_file = "C:/Users/andre/Documents/MyNodeProject/spotify_dataset/artists.csv"
-tracks_file = "C:/Users/andre/Documents/MyNodeProject/spotify_dataset/tracks.csv"
+# Filvägar för CSV-filer
+artists_file = "C:/Users/andre/Documents/MyNodeProject/flask_backend/spotify_dataset/artists.csv"
+tracks_file = "C:/Users/andre/Documents/MyNodeProject/flask_backend/spotify_dataset/tracks.csv"
 
+# Försök att läsa in datasets och visa information
 try:
     artists_df = pd.read_csv(artists_file)
     tracks_df = pd.read_csv(tracks_file)
     print("Datasets inlästa.")
+    print(f"Antal rader i artists_df: {len(artists_df)}")
+    print(f"Antal rader i tracks_df: {len(tracks_df)}")
 except FileNotFoundError:
     artists_df = None
     tracks_df = None
     print("En eller båda av CSV-filerna hittades inte.")
 
-# Route för att visa startsidan `index.html`
+# Kontrollera att "genres" och "id_artists" finns i datasets och slå samman data
+if artists_df is not None and tracks_df is not None:
+    # Lägg till genre från artistdata till spårdata
+    merged_df = tracks_df.merge(artists_df[['id', 'genres']], left_on='id_artists', right_on='id', how='left')
+    merged_df['genres'] = merged_df['genres'].fillna('Unknown')
+    print("Genrer tillagda till tracks_df via artistdata.")
+else:
+    merged_df = None  # Om sammanfogningen misslyckas
+
+# Route för startsidan
 @app.route('/')
 def home():
     return render_template('index.html')
@@ -36,31 +48,24 @@ def get_artists():
 @app.route('/tracks', methods=['GET'])
 def get_tracks():
     try:
-        tracks_data = tracks_df.head(10).to_dict(orient='records')
+        tracks_data = merged_df.head(10).to_dict(orient='records')
         return jsonify(tracks_data)
     except Exception as e:
         return jsonify({"error": str(e)})
 
-# API-endpoint för att generera rekommendationer
+# API-endpoint för att generera rekommendationer baserat på användarens preferenser
 @app.route('/generate-recommendation', methods=['POST'])
 def generate_recommendation():
     data = request.get_json()
     user_preferences = data.get("preferences", [])
 
-    if tracks_df is not None:
-        # Kontrollera att kolumnen "genre" finns i datasetet
-        if 'genre' in tracks_df.columns:
-            # Filtrera datasetet baserat på användarens preferenser (förväntar att kolumnen heter "genre")
-            recommendations = tracks_df[tracks_df['genre'].isin(user_preferences)].head(5)
-            # Kontrollera att kolumnen "title" finns
-            if 'title' in tracks_df.columns:
-                recommendations_list = recommendations['title'].tolist()
-            else:
-                recommendations_list = ["'title' column not found in dataset."]
-        else:
-            recommendations_list = ["'genre' column not found in dataset."]
+    recommendations_list = []
+    if merged_df is not None and 'genres' in merged_df.columns:
+        # Filtrera baserat på användarens genrer
+        filtered_tracks = merged_df[merged_df['genres'].apply(lambda x: any(genre in x for genre in user_preferences))]
+        recommendations_list = filtered_tracks['name'].head(10).tolist()
     else:
-        recommendations_list = ["No recommendations available (dataset not loaded)"]
+        recommendations_list = ["Genre information not available in dataset."]
 
     return jsonify({"recommendations": recommendations_list})
 
