@@ -1,18 +1,14 @@
 import Artist from '../models/artistModel.js';
-import csv from 'csv-parser';
-import fs from 'fs';
 
-export const importArtists = async (req, res) => {
+// Get all artists
+export const getArtists = async (req, res) => {
     try {
-        const results = [];
-        fs.createReadStream('spotify_dataset/artists.csv')
-            .pipe(csv())
-            .on('data', (data) => results.push(data))
-            .on('end', async () => {
-                await Artist.insertMany(results);
-                res.status(201).send({ message: 'Artists imported successfully!' });
-            });
+        const artists = await Artist.find();
+        if (!artists.length) {
+            return res.status(404).json({ message: 'No artists found' });
+        }
+        res.status(200).json(artists);
     } catch (error) {
-        res.status(500).send({ error: 'Failed to import artists', details: error });
+        res.status(500).json({ error: 'Failed to fetch artists', details: error.message });
     }
 };
