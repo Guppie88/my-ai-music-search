@@ -3,48 +3,57 @@ import React, { useEffect, useState } from 'react';
 const Tracks = () => {
     const [tracks, setTracks] = useState([]);
     const [error, setError] = useState('');
-
-    const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOiIxMjM0NSIsImlhdCI6MTczMTg0OTAwMywiZXhwIjoxNzM3MDMzMDAzfQ.ZXYwlofoezc981A6F7CQeJwGzue33I1d7CuqnOrG9qI';
+    const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchTracks = async () => {
             try {
-                const response = await fetch('http://localhost:3000/api/data/tracks', {
+                console.log('Fetching tracks...');
+                const response = await fetch('http://localhost:5000/api/data/tracks?page=1&limit=10', {
                     method: 'GET',
                     headers: {
-                        Authorization: `Bearer ${token}`,
                         'Content-Type': 'application/json',
                     },
                 });
 
+                console.log('Response:', response);
+
                 if (!response.ok) {
-                    throw new Error(`Failed to fetch tracks: ${response.statusText}`);
+                    throw new Error(`Misslyckades att hämta data: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                setTracks(data);
+                console.log('Fetched data:', data);
+                setTracks(data.tracks || []);
             } catch (err) {
+                console.error('Error fetching tracks:', err.message);
                 setError(err.message);
+            } finally {
+                setLoading(false);
             }
         };
 
         fetchTracks();
     }, []);
 
+    if (loading) {
+        return <p>Laddar...</p>;
+    }
+
     if (error) {
-        return <p className="error">Error: {error}</p>;
+        return <p style={{ color: 'red' }}>Fel: {error}</p>;
     }
 
     return (
         <div>
-            <h2>Tracks</h2>
+            <h1>Tracks</h1>
             {tracks.length === 0 ? (
-                <p>Loading...</p>
+                <p>Inga tracks tillgängliga.</p>
             ) : (
                 <ul>
                     {tracks.map((track) => (
                         <li key={track.id}>
-                            <strong>{track.name}</strong> by {track.artists.join(', ')} (Popularity: {track.popularity})
+                            {track.name} - {track.artists && track.artists.join(', ')} (Popularitet: {track.popularity})
                         </li>
                     ))}
                 </ul>
@@ -53,5 +62,4 @@ const Tracks = () => {
     );
 };
 
-// Viktigt: Lägg till detta för att exportera komponenten som standard
 export default Tracks;
