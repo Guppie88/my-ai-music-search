@@ -8,7 +8,6 @@ const Tracks = () => {
     useEffect(() => {
         const fetchTracks = async () => {
             try {
-                console.log('Fetching tracks...');
                 const response = await fetch('http://localhost:5000/api/data/tracks?page=1&limit=10', {
                     method: 'GET',
                     headers: {
@@ -16,17 +15,13 @@ const Tracks = () => {
                     },
                 });
 
-                console.log('Response:', response);
-
                 if (!response.ok) {
                     throw new Error(`Misslyckades att hämta data: ${response.statusText}`);
                 }
 
                 const data = await response.json();
-                console.log('Fetched data:', data);
                 setTracks(data.tracks || []);
             } catch (err) {
-                console.error('Error fetching tracks:', err.message);
                 setError(err.message);
             } finally {
                 setLoading(false);
@@ -36,13 +31,8 @@ const Tracks = () => {
         fetchTracks();
     }, []);
 
-    if (loading) {
-        return <p>Laddar...</p>;
-    }
-
-    if (error) {
-        return <p style={{ color: 'red' }}>Fel: {error}</p>;
-    }
+    if (loading) return <p>Laddar...</p>;
+    if (error) return <p style={{ color: 'red' }}>Fel: {error}</p>;
 
     return (
         <div>

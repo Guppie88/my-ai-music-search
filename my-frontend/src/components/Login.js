@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { login } from '../api/session';
+import { login } from '../session'; // Direkt från src/session.js
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -11,12 +11,12 @@ const Login = () => {
         try {
             const response = await login(username, password);
             if (response.user) {
-                setMessage(`Welcome, ${response.user.username}`);
+                setMessage(`Välkommen, ${response.user.username}`);
             } else {
                 setMessage(response.error);
             }
         } catch (error) {
-            setMessage('An error occurred while logging in.');
+            setMessage('Ett fel uppstod vid inloggning.');
         }
     };
 
@@ -24,13 +24,13 @@ const Login = () => {
         <form onSubmit={handleLogin}>
             <input
                 type="text"
-                placeholder="Username"
+                placeholder="Användarnamn"
                 value={username}
                 onChange={(e) => setUsername(e.target.value)}
             />
             <input
                 type="password"
-                placeholder="Password"
+                placeholder="Lösenord"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
             />
