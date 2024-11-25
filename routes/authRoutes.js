@@ -3,8 +3,13 @@ import { loginUser, logoutUser, getProtected } from '../controllers/authControll
 
 const router = express.Router();
 
+// Inloggning
 router.post('/login', loginUser);
+
+// Utloggning
 router.post('/logout', logoutUser);
+
+// Skyddad route
 router.get('/protected', getProtected);
 
 export default router;

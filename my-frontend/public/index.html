@@ -1,0 +1,11 @@
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App.js'; // Inkludera .js explicit
+import './index.css'; // Säkerställ att index.css finns i samma mapp
+
+const root = ReactDOM.createRoot(document.getElementById('root')); // 'root' måste existera i public/index.html
+root.render(
+<React.StrictMode>
+    <App />
+</React.StrictMode>
+);

@@ -4,23 +4,25 @@ const Tracks = () => {
     const [tracks, setTracks] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(true);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(0);
 
     useEffect(() => {
         const fetchTracks = async () => {
+            setLoading(true);
             try {
-                const response = await fetch('http://localhost:5000/api/data/tracks?page=1&limit=10', {
+                const response = await fetch(`http://localhost:5000/api/data/tracks?page=${page}&limit=10`, {
                     method: 'GET',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
+                    headers: { 'Content-Type': 'application/json' },
                 });
 
                 if (!response.ok) {
-                    throw new Error(`Misslyckades att hämta data: ${response.statusText}`);
+                    throw new Error(`Failed to fetch tracks: ${response.statusText}`);
                 }
 
                 const data = await response.json();
                 setTracks(data.tracks || []);
+                setTotalPages(data.pages || 0);
             } catch (err) {
                 setError(err.message);
             } finally {
@@ -29,14 +31,22 @@ const Tracks = () => {
         };
 
         fetchTracks();
-    }, []);
+    }, [page]);
+
+    const handleNext = () => {
+        if (page < totalPages) setPage(page + 1);
+    };
+
+    const handlePrevious = () => {
+        if (page > 1) setPage(page - 1);
+    };
 
     if (loading) return <p>Laddar...</p>;
     if (error) return <p style={{ color: 'red' }}>Fel: {error}</p>;
 
     return (
         <div>
-            <h1>Tracks</h1>
+            <h2>Tracks</h2>
             {tracks.length === 0 ? (
                 <p>Inga tracks tillgängliga.</p>
             ) : (
@@ -48,6 +58,17 @@ const Tracks = () => {
                     ))}
                 </ul>
             )}
+            <div>
+                <button onClick={handlePrevious} disabled={page === 1}>
+                    Föregående
+                </button>
+                <span>
+                    Sida {page} av {totalPages}
+                </span>
+                <button onClick={handleNext} disabled={page === totalPages}>
+                    Nästa
+                </button>
+            </div>
         </div>
     );
 };
