@@ -1,11 +1,12 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import App from './App.js'; // Inkludera .js explicit
-import './index.css'; // Säkerställ att index.css finns i samma mapp
-
-const root = ReactDOM.createRoot(document.getElementById('root')); // 'root' måste existera i public/index.html
-root.render(
-<React.StrictMode>
-    <App />
-</React.StrictMode>
-);
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My AI Music Search</title>
+</head>
+<body>
+<div id="root"></div>
+<script src="/bundle.js" defer></script> <!-- Referens till bundle.js -->
+</body>
+</html>

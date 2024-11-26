@@ -1,23 +1,20 @@
 import React from 'react';
-import { logout } from '../session'; // Förutsatt att session.js finns och hanterar API-anrop för sessioner
+import { logout } from '../session.js'; // Uppdaterad sökväg
 
 const Header = () => {
     const handleLogout = async () => {
         try {
             const response = await logout();
-            alert(response.message || 'Du har loggats ut.');
+            console.log(response.message); // Visa meddelande vid lyckad utloggning
+            alert('Du har loggats ut.'); // Visa ett meddelande om utloggning
+            window.location.href = '/'; // Omdirigera till inloggningssidan
         } catch (error) {
             console.error('Error during logout:', error);
-            alert('Ett fel uppstod vid utloggning.');
+            alert('Ett fel inträffade vid utloggning.'); // Visa ett felmeddelande om utloggning misslyckades
         }
     };
 
-    return (
-        <header>
-            <h1>AI Music Search</h1>
-            <button onClick={handleLogout}>Logga ut</button>
-        </header>
-    );
+    return <button onClick={handleLogout}>Logga ut</button>;
 };
 
 export default Header;

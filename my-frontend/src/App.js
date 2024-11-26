@@ -1,23 +1,20 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import Header from './components/Header';
-import Login from './components/Login';
-import ProtectedRoute from './components/ProtectedRoute';
-import Tracks from './components/Tracks';
+import Header from './components/Header.js'; // Säkerställ att alla .js-explicita tillägg finns
+import Login from './components/Login.js';
+import ProtectedRoute from './components/ProtectedRoute.js';
+import Tracks from './components/Tracks.js';
+import Recommendations from './components/Recommendations.js';
 
 const App = () => {
     return (
         <Router>
             <Header />
             <Routes>
-                {/* Route för Login */}
                 <Route path="/" element={<Login />} />
-
-                {/* Skyddad Route */}
                 <Route path="/protected" element={<ProtectedRoute />} />
-
-                {/* Route för Tracks */}
                 <Route path="/tracks" element={<Tracks />} />
+                <Route path="/recommendations" element={<Recommendations />} />
             </Routes>
         </Router>
     );

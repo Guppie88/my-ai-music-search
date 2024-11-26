@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { getProtected } from '../session'; // Förutsatt att session.js hanterar skyddade anrop
+import { getProtected } from '../session.js'; // Uppdaterad sökväg
 
 const ProtectedRoute = () => {
     const [data, setData] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
 
     useEffect(() => {
         const fetchData = async () => {
@@ -12,25 +10,14 @@ const ProtectedRoute = () => {
                 const response = await getProtected();
                 setData(response);
             } catch (error) {
-                console.error('Error fetching protected data:', error);
-                setError('Ett fel uppstod vid hämtning av data.');
-            } finally {
-                setLoading(false);
+                console.error('Error fetching protected route:', error);
             }
         };
 
         fetchData();
     }, []);
 
-    if (loading) return <p>Laddar...</p>;
-    if (error) return <p style={{ color: 'red' }}>{error}</p>;
-
-    return (
-        <div>
-            <h2>Skyddad Sida</h2>
-            <pre>{JSON.stringify(data, null, 2)}</pre>
-        </div>
-    );
+    return <div>{data ? JSON.stringify(data) : 'Loading...'}</div>;
 };
 
 export default ProtectedRoute;

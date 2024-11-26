@@ -1,11 +1,11 @@
-import path from 'path';
+const path = require('path');
 
-export default {
+module.exports = {
     mode: 'development',
     entry: './src/index.js',
     output: {
-        path: path.resolve('./dist'),
-        filename: 'main.js',
+        path: path.resolve(__dirname, 'dist'),
+        filename: 'bundle.js', // Säkerställ att output-filen matchar referensen i HTML
     },
     module: {
         rules: [
@@ -26,12 +26,17 @@ export default {
         ],
     },
     devServer: {
-        static: './public',
+        static: './public', // Säkerställ att mappen public används för statiska filer
         hot: true,
         open: true,
         port: 8080,
     },
     resolve: {
-        extensions: ['.js', '.jsx'],
+        extensions: ['.js', '.jsx'], // Tillåter att importera filer utan tillägg
+        fallback: {
+            crypto: require.resolve('crypto-browserify'),
+            buffer: require.resolve('buffer/'),
+            stream: require.resolve('stream-browserify'),
+        },
     },
 };
