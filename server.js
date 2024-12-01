@@ -5,6 +5,7 @@ import { createClient } from 'redis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
+import aiRoutes from './routes/aiRoutes.js'; // AI-routes
 import Track from './models/trackModel.js'; // Importera Track-modellen
 
 dotenv.config();
@@ -61,7 +62,6 @@ app.post('/login', (req, res) => {
 // Logout-endpoint
 app.post('/logout', (req, res) => {
     if (req.session) {
-        // Försök ta bort sessionen
         req.session.destroy((err) => {
             if (err) {
                 console.error('Error destroying session:', err);
@@ -78,13 +78,13 @@ app.post('/logout', (req, res) => {
 // Endpoint för att hämta spår med paginering
 app.get('/api/data/tracks', async (req, res) => {
     try {
-        const { page = 1, limit = 10 } = req.query; // Standardvärden om de inte skickas
-        const skip = (page - 1) * limit; // Räkna ut hur många poster som ska hoppas över
+        const { page = 1, limit = 10 } = req.query;
+        const skip = (page - 1) * limit;
 
         const tracks = await Track.find()
             .skip(skip)
             .limit(Number(limit))
-            .sort({ popularity: -1 }); // Sortera efter popularitet (störst först)
+            .sort({ popularity: -1 });
 
         const totalTracks = await Track.countDocuments();
         const totalPages = Math.ceil(totalTracks / limit);
@@ -96,6 +96,7 @@ app.get('/api/data/tracks', async (req, res) => {
             totalTracks
         });
     } catch (error) {
+        console.error('Error fetching tracks:', error);
         res.status(500).json({ error: 'Failed to fetch tracks' });
     }
 });
@@ -103,16 +104,34 @@ app.get('/api/data/tracks', async (req, res) => {
 // Ny rekommendationsrutt
 app.get('/api/recommendations', async (req, res) => {
     try {
-        const { genre = 'Pop' } = req.query; // Standardgenre
-        const recommendations = await Track.find({ genre })
+        const { artist, name } = req.query;
+        let query = {};
+
+        if (artist) {
+            query['artists'] = artist;
+        }
+
+        if (name) {
+            query['name'] = { $regex: new RegExp(name, 'i') }; // Case-insensitive sökning
+        }
+
+        const recommendations = await Track.find(query)
             .sort({ popularity: -1 })
             .limit(10);
 
+        if (!recommendations.length) {
+            return res.status(404).json({ message: 'Inga låtar hittades' });
+        }
+
         res.status(200).json(recommendations);
     } catch (error) {
+        console.error('Error fetching recommendations:', error);
         res.status(500).json({ error: 'Failed to fetch recommendations' });
     }
 });
+
+// Registrera AI-routes
+app.use('/api', aiRoutes);
 
 // Hantera okända endpoints
 app.use((req, res) => {

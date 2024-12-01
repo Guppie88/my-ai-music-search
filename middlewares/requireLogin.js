@@ -51,6 +51,25 @@ app.post('/login', (req, res) => {
     }
 });
 
+// Utloggningsroute
+app.post('/logout', (req, res) => {
+    if (req.session) {
+        console.log('Current session before destroying:', req.session); // Logga sessionen
+        req.session.destroy((err) => {
+            if (err) {
+                console.error('Error destroying session:', err);
+                return res.status(500).json({ error: 'Misslyckades att logga ut' });
+            }
+            res.clearCookie('connect.sid'); // Ta bort cookien
+            console.log('Session destroyed, cookie cleared');
+            res.status(200).json({ message: 'Utloggning lyckades' });
+        });
+    } else {
+        console.warn('Ingen session att logga ut från');
+        res.status(400).json({ error: 'Ingen aktiv session att logga ut från' });
+    }
+});
+
 // Skyddad route
 app.get('/protected', requireLogin, (req, res) => {
     res.status(200).json({ message: 'Access granted', user: req.session.user });

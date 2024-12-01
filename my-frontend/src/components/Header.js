@@ -1,16 +1,17 @@
+// Header.js
 import React from 'react';
-import { logout } from '../session.js'; // Uppdaterad sökväg
+import { logout } from '../session.js'; // Korrekt import
 
 const Header = () => {
     const handleLogout = async () => {
         try {
             const response = await logout();
             console.log(response.message); // Visa meddelande vid lyckad utloggning
-            alert('Du har loggats ut.'); // Visa ett meddelande om utloggning
+            alert('Du har loggats ut.');
             window.location.href = '/'; // Omdirigera till inloggningssidan
         } catch (error) {
             console.error('Error during logout:', error);
-            alert('Ett fel inträffade vid utloggning.'); // Visa ett felmeddelande om utloggning misslyckades
+            alert('Ett fel inträffade vid utloggning.');
         }
     };
 

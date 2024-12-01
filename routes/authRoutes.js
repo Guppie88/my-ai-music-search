@@ -10,6 +10,6 @@ router.post('/login', loginUser);
 router.post('/logout', logoutUser);
 
 // Skyddad route
-router.get('/protected', getProtected);
+router.get('/protected', getProtected); // Hanterar skyddad åtkomst
 
 export default router;
