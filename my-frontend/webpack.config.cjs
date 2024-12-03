@@ -5,7 +5,7 @@ module.exports = {
     entry: './src/index.js',
     output: {
         path: path.resolve(__dirname, 'dist'),
-        filename: 'bundle.js', // Säkerställ att output-filen matchar referensen i HTML
+        filename: 'bundle.js',
     },
     module: {
         rules: [
@@ -26,17 +26,21 @@ module.exports = {
         ],
     },
     devServer: {
-        static: './public', // Säkerställ att mappen public används för statiska filer
+        static: './public',
         hot: true,
         open: true,
         port: 8080,
+        proxy: [
+            {
+                context: ['/api'], // Vägar som ska proxas
+                target: 'http://localhost:5000', // Backend-servern
+                changeOrigin: true,
+                secure: false, // Tillåt osäkra certifikat för lokal utveckling
+            },
+        ],
+        historyApiFallback: true, // För React SPA-routing
     },
     resolve: {
-        extensions: ['.js', '.jsx'], // Tillåter att importera filer utan tillägg
-        fallback: {
-            crypto: require.resolve('crypto-browserify'),
-            buffer: require.resolve('buffer/'),
-            stream: require.resolve('stream-browserify'),
-        },
+        extensions: ['.js', '.jsx'],
     },
 };

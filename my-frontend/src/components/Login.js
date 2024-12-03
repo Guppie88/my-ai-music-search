@@ -1,23 +1,21 @@
 import React, { useState } from 'react';
-import { login } from '../session.js'; // Importera korrekt
+import { useNavigate } from 'react-router-dom';
+import { login } from '../session.js'; // Lagt till filändelsen .js
 
 const Login = () => {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             const response = await login(username, password);
-            if (response.user) {
-                setMessage(`Välkommen, ${response.user.username}`);
-            } else {
-                setMessage(response.error || 'Inloggning misslyckades.');
-            }
+            setMessage(`Välkommen, ${response.user.username}`);
+            navigate('/tracks'); // Navigera till tracks efter lyckad inloggning
         } catch (error) {
-            setMessage('Ett fel uppstod vid inloggning.');
-            console.error('Login error:', error);
+            setMessage(error.message);
         }
     };
 

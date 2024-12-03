@@ -1,11 +1,11 @@
 import express from 'express';
-import session from 'express-session';
-import RedisStore from 'connect-redis';
-import { createClient } from 'redis';
 import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
-import aiRoutes from './routes/aiRoutes.js'; // AI-routes
+import path from 'path';
+import userRoutes from './routes/userRoutes.js';
+import authRoutes from './routes/authRoutes.js';
+import aiRoutes from './routes/aiRoutes.js'; // AI-relaterade rutter
 import Track from './models/trackModel.js'; // Importera Track-modellen
 
 dotenv.config();
@@ -13,67 +13,38 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware för JSON och CORS
+// Middleware för JSON
 app.use(express.json());
+
+// Dynamisk CORS-konfiguration
+const allowedOrigins = ['http://localhost:8080', 'http://172.28.160.1:8080', 'http://localhost:3000'];
 app.use(cors({
-    origin: ['http://localhost:3000', 'http://localhost:8080'], // Tillåt båda frontend-portarna
-    credentials: true // Tillåt cookies och sessionshantering
+    origin: (origin, callback) => {
+        if (!origin || allowedOrigins.includes(origin)) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true, // Tillåt cookies och sessionshantering
 }));
 
-// Redis-konfiguration
-const redisClient = createClient({ legacyMode: true });
-redisClient.connect().catch(console.error);
-
-const store = new RedisStore({
-    client: redisClient
-});
-
-app.use(session({
-    store,
-    secret: process.env.SESSION_SECRET || 'defaultSecret',
-    resave: false,
-    saveUninitialized: false,
-    cookie: {
-        secure: false,
-        httpOnly: true,
-        maxAge: 24 * 60 * 60 * 1000 // 1 dag
-    }
-}));
-
-// MongoDB-anslutning
+// Anslutning till MongoDB
 mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myDatabase', {
     useNewUrlParser: true,
-    useUnifiedTopology: true
+    useUnifiedTopology: true,
 })
     .then(() => console.log('MongoDB connected'))
     .catch(err => console.error('MongoDB connection error:', err));
 
-// Login-endpoint
-app.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username === 'demo' && password === 'password') { // Demo-uppgifter
-        req.session.user = { username };
-        res.status(200).json({ message: 'Login successful', user: req.session.user });
-    } else {
-        res.status(401).json({ error: 'Invalid username or password' });
-    }
-});
+// Statisk mapp för frontend
+const __dirname = path.resolve();
+app.use(express.static(path.join(__dirname, '/public')));
 
-// Logout-endpoint
-app.post('/logout', (req, res) => {
-    if (req.session) {
-        req.session.destroy((err) => {
-            if (err) {
-                console.error('Error destroying session:', err);
-                res.status(500).json({ error: 'Failed to logout' });
-            } else {
-                res.status(200).json({ message: 'Logout successful' });
-            }
-        });
-    } else {
-        res.status(400).json({ error: 'No active session to logout' });
-    }
-});
+// API-routes
+app.use('/api/users', userRoutes);
+app.use('/api/auth', authRoutes);
+app.use('/api/ai', aiRoutes);
 
 // Endpoint för att hämta spår med paginering
 app.get('/api/data/tracks', async (req, res) => {
@@ -93,7 +64,7 @@ app.get('/api/data/tracks', async (req, res) => {
             tracks,
             currentPage: Number(page),
             totalPages,
-            totalTracks
+            totalTracks,
         });
     } catch (error) {
         console.error('Error fetching tracks:', error);
@@ -101,19 +72,14 @@ app.get('/api/data/tracks', async (req, res) => {
     }
 });
 
-// Ny rekommendationsrutt
+// Rutt för rekommendationer
 app.get('/api/recommendations', async (req, res) => {
     try {
         const { artist, name } = req.query;
         let query = {};
 
-        if (artist) {
-            query['artists'] = artist;
-        }
-
-        if (name) {
-            query['name'] = { $regex: new RegExp(name, 'i') }; // Case-insensitive sökning
-        }
+        if (artist) query['artists'] = artist;
+        if (name) query['name'] = { $regex: new RegExp(name, 'i') }; // Case-insensitive sökning
 
         const recommendations = await Track.find(query)
             .sort({ popularity: -1 })
@@ -130,8 +96,10 @@ app.get('/api/recommendations', async (req, res) => {
     }
 });
 
-// Registrera AI-routes
-app.use('/api', aiRoutes);
+// Hantera frontend-rutter (React SPA)
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '/public/index.html'));
+});
 
 // Hantera okända endpoints
 app.use((req, res) => {
@@ -139,4 +107,6 @@ app.use((req, res) => {
 });
 
 // Starta servern
-app.listen(PORT, () => console.log(`Server is running on http://localhost:${PORT}`));
+app.listen(PORT, () => {
+    console.log(`Server is running on http://localhost:${PORT}`);
+});

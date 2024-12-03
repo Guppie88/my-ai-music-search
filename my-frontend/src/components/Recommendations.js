@@ -10,9 +10,12 @@ import {
     ListItem,
     ListItemText,
 } from '@mui/material';
-import '../Recommendations.css'; // Korrekt sökväg
+import './Recommendations.css'; // Korrekt CSS-sökväg från components
 
 const Recommendations = () => {
+    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api'; // Hantera miljövariabel
+    console.log(`API URL: ${apiUrl}`); // Logga API-URL
+
     const [artist, setArtist] = useState('');
     const [name, setName] = useState('');
     const [popularity, setPopularity] = useState('');
@@ -31,9 +34,7 @@ const Recommendations = () => {
                 if (popularity) queryParams.append('popularity', popularity);
                 if (releaseDate) queryParams.append('releaseDate', releaseDate);
 
-                const response = await fetch(
-                    `http://localhost:5000/api/recommendations?${queryParams}`
-                );
+                const response = await fetch(`${apiUrl}/recommendations?${queryParams}`); // Använd API-URL från miljövariabel
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -52,7 +53,7 @@ const Recommendations = () => {
         };
 
         fetchRecommendations();
-    }, [artist, name, popularity, releaseDate]);
+    }, [artist, name, popularity, releaseDate, apiUrl]);
 
     return (
         <Container maxWidth="sm" sx={{ mt: 5 }}>
