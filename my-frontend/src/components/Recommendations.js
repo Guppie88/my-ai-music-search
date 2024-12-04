@@ -1,136 +1,65 @@
-import React, { useState, useEffect } from 'react';
-import {
-    Box,
-    Container,
-    Typography,
-    TextField,
-    Button,
-    CircularProgress,
-    List,
-    ListItem,
-    ListItemText,
-} from '@mui/material';
-import './Recommendations.css'; // Korrekt CSS-sökväg från components
+import React, { useState } from 'react';
+import './Recommendations.css';
 
 const Recommendations = () => {
-    const apiUrl = process.env.REACT_APP_API_URL || 'http://localhost:5000/api'; // Hantera miljövariabel
-    console.log(`API URL: ${apiUrl}`); // Logga API-URL
-
     const [artist, setArtist] = useState('');
     const [name, setName] = useState('');
-    const [popularity, setPopularity] = useState('');
-    const [releaseDate, setReleaseDate] = useState('');
     const [recommendations, setRecommendations] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
-    useEffect(() => {
-        const fetchRecommendations = async () => {
-            setLoading(true);
-            try {
-                const queryParams = new URLSearchParams();
-                if (artist) queryParams.append('artist', artist);
-                if (name) queryParams.append('name', name);
-                if (popularity) queryParams.append('popularity', popularity);
-                if (releaseDate) queryParams.append('releaseDate', releaseDate);
+    const fetchRecommendations = async () => {
+        setLoading(true);
+        try {
+            const queryParams = new URLSearchParams();
+            if (artist) queryParams.append('artist', artist);
+            if (name) queryParams.append('name', name);
 
-                const response = await fetch(`${apiUrl}/recommendations?${queryParams}`); // Använd API-URL från miljövariabel
+            const response = await fetch(`/api/recommendations?${queryParams}`);
+            const data = await response.json();
 
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    throw new Error(errorData.message || 'Failed to fetch recommendations');
-                }
+            if (!response.ok) throw new Error(data.message || 'Misslyckades att hämta rekommendationer');
 
-                const data = await response.json();
-                setRecommendations(data);
-                setError('');
-            } catch (error) {
-                setRecommendations([]);
-                setError(error.message);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchRecommendations();
-    }, [artist, name, popularity, releaseDate, apiUrl]);
+            setRecommendations(data);
+            setError('');
+        } catch (error) {
+            setRecommendations([]);
+            setError(error.message);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     return (
-        <Container maxWidth="sm" sx={{ mt: 5 }}>
-            <Typography variant="h4" align="center" gutterBottom>
-                Rekommenderade låtar
-            </Typography>
-            <Typography variant="body1" align="center" gutterBottom>
-                Fyll i ett eller flera filter för att hitta låtar.
-            </Typography>
-            <Box
-                component="form"
-                sx={{
-                    '& > :not(style)': { mb: 2 },
-                }}
-                noValidate
-                autoComplete="off"
-            >
-                <TextField
-                    fullWidth
-                    label="Artist"
-                    value={artist}
-                    onChange={(e) => setArtist(e.target.value)}
-                    placeholder="Ange artistnamn"
-                />
-                <TextField
-                    fullWidth
-                    label="Låtnamn"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    placeholder="Ange låtnamn"
-                />
-                <TextField
-                    fullWidth
-                    label="Popularitet"
-                    type="number"
-                    inputProps={{ min: 0, max: 100 }}
-                    value={popularity}
-                    onChange={(e) => setPopularity(e.target.value)}
-                    placeholder="0-100"
-                />
-                <TextField
-                    fullWidth
-                    label="Utgivningsdatum"
-                    value={releaseDate}
-                    onChange={(e) => setReleaseDate(e.target.value)}
-                    placeholder="ÅÅÅÅ-MM-DD"
-                />
-                <Button
-                    variant="contained"
-                    color="primary"
-                    fullWidth
-                    onClick={() => setRecommendations([])}
-                >
-                    Töm filter
-                </Button>
-            </Box>
-            {loading ? (
-                <CircularProgress sx={{ display: 'block', mx: 'auto', my: 3 }} />
-            ) : error ? (
-                <Typography color="error" align="center">
-                    {error}
-                </Typography>
-            ) : recommendations.length > 0 ? (
-                <List>
-                    {recommendations.map((track) => (
-                        <ListItem key={track._id} sx={{ borderBottom: '1px solid #ddd' }}>
-                            <ListItemText
-                                primary={`${track.name} - ${track.artists?.join(', ')}`}
-                                secondary={`Popularitet: ${track.popularity}, Släppt: ${track.releaseDate}`}
-                            />
-                        </ListItem>
-                    ))}
-                </List>
+        <div className="recommendations-container">
+            <h2>Rekommendationer</h2>
+            <input
+                type="text"
+                placeholder="Artist"
+                value={artist}
+                onChange={(e) => setArtist(e.target.value)}
+            />
+            <input
+                type="text"
+                placeholder="Låtnamn"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+            />
+            <button onClick={fetchRecommendations} disabled={loading}>
+                {loading ? 'Laddar...' : 'Hämta rekommendationer'}
+            </button>
+            {error ? (
+                <p style={{ color: 'red' }}>{error}</p>
             ) : (
-                <Typography align="center">Inga låtar hittades. Justera dina filter och försök igen.</Typography>
+                <ul>
+                    {recommendations.map((track) => (
+                        <li key={track._id}>
+                            {track.name} - {track.artists?.join(', ')}
+                        </li>
+                    ))}
+                </ul>
             )}
-        </Container>
+        </div>
     );
 };
 

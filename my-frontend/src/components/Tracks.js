@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 
 const Tracks = () => {
@@ -12,7 +11,7 @@ const Tracks = () => {
         const fetchTracks = async () => {
             setLoading(true);
             try {
-                const response = await fetch(`http://localhost:5000/api/data/tracks?page=${page}&limit=10`, {
+                const response = await fetch(`/api/data/tracks?page=${page}&limit=10`, {
                     method: 'GET',
                     headers: { 'Content-Type': 'application/json' },
                 });

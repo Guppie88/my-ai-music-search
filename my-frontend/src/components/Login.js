@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../session.js'; // Lagt till filändelsen .js
+import { login } from '../session.js';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -11,16 +11,16 @@ const Login = () => {
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await login(username, password);
+            const response = await login(username, password); // Använd login-funktionen
             setMessage(`Välkommen, ${response.user.username}`);
-            navigate('/tracks'); // Navigera till tracks efter lyckad inloggning
+            navigate('/tracks'); // Navigera till Tracks efter lyckad inloggning
         } catch (error) {
             setMessage(error.message);
         }
     };
 
     return (
-        <div>
+        <div className="login-container">
             <h2>Logga in</h2>
             <form onSubmit={handleLogin}>
                 <input

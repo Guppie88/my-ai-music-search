@@ -5,46 +5,54 @@ import mongoose from 'mongoose';
 import path from 'path';
 import userRoutes from './routes/userRoutes.js';
 import authRoutes from './routes/authRoutes.js';
-import aiRoutes from './routes/aiRoutes.js'; // AI-relaterade rutter
-import Track from './models/trackModel.js'; // Importera Track-modellen
+import aiRoutes from './routes/aiRoutes.js';
+import trackRoutes from './routes/trackRoutes.js';
+import recommendationRoutes from './routes/recommendationRoutes.js'; // Import för rekommendationer
+import Track from './models/trackModel.js';
 
 dotenv.config();
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// Middleware för JSON
+// Middleware för att hantera JSON och CORS
 app.use(express.json());
-
-// Dynamisk CORS-konfiguration
 const allowedOrigins = ['http://localhost:8080', 'http://172.28.160.1:8080', 'http://localhost:3000'];
-app.use(cors({
-    origin: (origin, callback) => {
-        if (!origin || allowedOrigins.includes(origin)) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    credentials: true, // Tillåt cookies och sessionshantering
-}));
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            if (!origin || allowedOrigins.includes(origin)) {
+                callback(null, true);
+            } else {
+                callback(new Error('Not allowed by CORS'));
+            }
+        },
+        credentials: true,
+    })
+);
+
+// Middleware för att logga och normalisera URL
+app.use((req, res, next) => {
+    console.log(`Incoming URL: ${req.url}`);
+    req.url = req.url.replace(/\/\//g, '/');
+    next();
+});
 
 // Anslutning till MongoDB
-mongoose.connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myDatabase', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
+mongoose
+    .connect(process.env.MONGO_URI || 'mongodb://localhost:27017/myDatabase', {
+        useNewUrlParser: true,
+        useUnifiedTopology: true,
+    })
     .then(() => console.log('MongoDB connected'))
-    .catch(err => console.error('MongoDB connection error:', err));
-
-// Statisk mapp för frontend
-const __dirname = path.resolve();
-app.use(express.static(path.join(__dirname, '/public')));
+    .catch((err) => console.error('MongoDB connection error:', err));
 
 // API-routes
 app.use('/api/users', userRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
+app.use('/api/data', trackRoutes);
+app.use('/api/recommendations', recommendationRoutes); // Ny rekommendationsrutt
 
 // Endpoint för att hämta spår med paginering
 app.get('/api/data/tracks', async (req, res) => {
@@ -52,11 +60,7 @@ app.get('/api/data/tracks', async (req, res) => {
         const { page = 1, limit = 10 } = req.query;
         const skip = (page - 1) * limit;
 
-        const tracks = await Track.find()
-            .skip(skip)
-            .limit(Number(limit))
-            .sort({ popularity: -1 });
-
+        const tracks = await Track.find().skip(skip).limit(Number(limit)).sort({ popularity: -1 });
         const totalTracks = await Track.countDocuments();
         const totalPages = Math.ceil(totalTracks / limit);
 
@@ -79,11 +83,9 @@ app.get('/api/recommendations', async (req, res) => {
         let query = {};
 
         if (artist) query['artists'] = artist;
-        if (name) query['name'] = { $regex: new RegExp(name, 'i') }; // Case-insensitive sökning
+        if (name) query['name'] = { $regex: new RegExp(name, 'i') };
 
-        const recommendations = await Track.find(query)
-            .sort({ popularity: -1 })
-            .limit(10);
+        const recommendations = await Track.find(query).sort({ popularity: -1 }).limit(10);
 
         if (!recommendations.length) {
             return res.status(404).json({ message: 'Inga låtar hittades' });
@@ -96,14 +98,23 @@ app.get('/api/recommendations', async (req, res) => {
     }
 });
 
-// Hantera frontend-rutter (React SPA)
+// Statisk filhantering och SPA-stöd
+const __dirname = path.resolve(); // Hämta rotmappens sökväg
+const publicPath = path.join(__dirname, 'my-frontend/public'); // Uppdaterad sökväg
+app.use(express.static(publicPath)); // Serva filer från public-mappen
+
+// Fånga alla andra rutter och servera SPA:n
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, '/public/index.html'));
+    res.sendFile(path.join(publicPath, 'index.html')); // Skicka React:s index.html
 });
 
-// Hantera okända endpoints
-app.use((req, res) => {
-    res.status(404).json({ error: 'Resource not found' });
+// Hantera okända endpoints för API-rutter
+app.use((req, res, next) => {
+    if (req.originalUrl.startsWith('/api')) {
+        res.status(404).json({ error: 'API route not found' });
+    } else {
+        next(); // Låt frontend-router hantera resten
+    }
 });
 
 // Starta servern

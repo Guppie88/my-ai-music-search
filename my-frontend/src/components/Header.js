@@ -1,21 +1,27 @@
-// Header.js
 import React from 'react';
-import { logout } from '../session.js'; // Korrekt import
+import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
+    const navigate = useNavigate();
+
     const handleLogout = async () => {
         try {
-            const response = await logout();
-            console.log(response.message); // Visa meddelande vid lyckad utloggning
+            const response = await fetch('/api/auth/logout', { method: 'POST' });
+            if (!response.ok) throw new Error('Logout failed');
+
             alert('Du har loggats ut.');
-            window.location.href = '/'; // Omdirigera till inloggningssidan
+            navigate('/login'); // Omdirigera till login efter utloggning
         } catch (error) {
-            console.error('Error during logout:', error);
-            alert('Ett fel inträffade vid utloggning.');
+            console.error('Logout error:', error);
         }
     };
 
-    return <button onClick={handleLogout}>Logga ut</button>;
+    return (
+        <header>
+            <h1>My AI Music Search</h1>
+            <button onClick={handleLogout}>Logga ut</button>
+        </header>
+    );
 };
 
 export default Header;

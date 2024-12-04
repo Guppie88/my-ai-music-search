@@ -10,17 +10,14 @@ export const getTracks = async (req, res) => {
     }
 
     try {
-        // Hämta tracks från databasen
         const tracks = await Track.find()
             .skip((page - 1) * limit)
             .limit(limit)
             .sort({ popularity: -1 });
 
-        // Beräkna totalantal och antal sidor
         const total = await Track.countDocuments();
         const pages = Math.ceil(total / limit);
 
-        // Skicka svar
         res.status(200).json({ tracks, total, page, pages });
     } catch (error) {
         console.error('Error fetching tracks:', error.message);
@@ -28,8 +25,7 @@ export const getTracks = async (req, res) => {
     }
 };
 
-// Importera tracks från en fil (Placeholder)
+// Placeholder för att importera tracks
 export const importTracks = async (req, res) => {
-    // Placeholder för CSV-import
     res.status(501).json({ message: 'Importfunktion inte implementerad ännu' });
 };

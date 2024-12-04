@@ -3,10 +3,10 @@ import { getTracks, importTracks } from '../controllers/trackController.js';
 
 const router = express.Router();
 
-// Hämta låtar med pagination
+// Rutt för att hämta tracks
 router.get('/tracks', getTracks);
 
-// Importera låtar från CSV
-router.post('/import/tracks', importTracks);
+// Placeholder-rutt för import
+router.post('/tracks/import', importTracks);
 
 export default router;
