@@ -15,16 +15,23 @@ const Recommendations = () => {
             if (artist) queryParams.append('artist', artist);
             if (name) queryParams.append('name', name);
 
+            console.log('QueryParams sent:', queryParams.toString());
+
             const response = await fetch(`/api/recommendations?${queryParams}`);
             const data = await response.json();
 
-            if (!response.ok) throw new Error(data.message || 'Misslyckades att hämta rekommendationer');
+            console.log('Response data:', data);
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Misslyckades att hämta rekommendationer');
+            }
 
             setRecommendations(data);
             setError('');
         } catch (error) {
-            setRecommendations([]);
+            console.error('Error fetching recommendations:', error.message);
             setError(error.message);
+            setRecommendations([]);
         } finally {
             setLoading(false);
         }
@@ -48,12 +55,11 @@ const Recommendations = () => {
             <button onClick={fetchRecommendations} disabled={loading}>
                 {loading ? 'Laddar...' : 'Hämta rekommendationer'}
             </button>
-            {error ? (
-                <p style={{ color: 'red' }}>{error}</p>
-            ) : (
+            {error && <p style={{ color: 'red' }}>{error}</p>}
+            {recommendations.length > 0 && (
                 <ul>
                     {recommendations.map((track) => (
-                        <li key={track._id}>
+                        <li key={track._id} className="recommendation-item">
                             {track.name} - {track.artists?.join(', ')}
                         </li>
                     ))}

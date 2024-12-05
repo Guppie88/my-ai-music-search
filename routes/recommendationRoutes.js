@@ -3,6 +3,6 @@ import { getRecommendations } from '../controllers/recommendationController.js';
 
 const router = express.Router();
 
-router.get('/recommendations', getRecommendations);
+router.get('/', getRecommendations); // Anropar controller-metoden
 
 export default router;

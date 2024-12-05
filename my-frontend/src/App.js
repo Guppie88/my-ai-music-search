@@ -6,18 +6,22 @@ import Tracks from './components/Tracks.js';
 import Recommendations from './components/Recommendations.js';
 import Login from './components/Login.js';
 import Register from './components/Register.js';
+import Header from './components/Header.js'; // Importera Header
 
 const App = () => {
     return (
         <Router>
-            <Routes>
-                <Route path="/" element={<Home />} />
-                <Route path="/search" element={<Search />} />
-                <Route path="/tracks" element={<Tracks />} />
-                <Route path="/recommendations" element={<Recommendations />} />
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-            </Routes>
+            <>
+                <Header /> {/* Lägg till Header */}
+                <Routes>
+                    <Route path="/" element={<Home />} />
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/tracks" element={<Tracks />} />
+                    <Route path="/recommendations" element={<Recommendations />} />
+                    <Route path="/login" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                </Routes>
+            </>
         </Router>
     );
 };
