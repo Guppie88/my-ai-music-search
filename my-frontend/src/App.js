@@ -6,13 +6,13 @@ import Tracks from './components/Tracks.js';
 import Recommendations from './components/Recommendations.js';
 import Login from './components/Login.js';
 import Register from './components/Register.js';
-import Header from './components/Header.js'; // Importera Header
+import Header from './components/Header.js'; // Importera Header med korrekt extension
 
 const App = () => {
     return (
         <Router>
             <>
-                <Header /> {/* Lägg till Header */}
+                <Header />
                 <Routes>
                     <Route path="/" element={<Home />} />
                     <Route path="/search" element={<Search />} />

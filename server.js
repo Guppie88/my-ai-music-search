@@ -8,6 +8,7 @@ import authRoutes from './routes/authRoutes.js';
 import aiRoutes from './routes/aiRoutes.js';
 import trackRoutes from './routes/trackRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
+import searchRoutes from './routes/searchRoutes.js'; // Importera searchRoutes
 
 dotenv.config();
 
@@ -33,6 +34,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/ai', aiRoutes);
 app.use('/api/data', trackRoutes);
 app.use('/api/recommendations', recommendationRoutes);
+app.use('/api/search', searchRoutes); // Lägg till searchRoutes
 
 // Serve static files for the frontend
 const __dirname = path.resolve();
