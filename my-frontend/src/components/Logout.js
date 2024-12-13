@@ -1,26 +1,23 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { logout } from '../services/authService.js'; // Importera din logout-funktion
 
 const Logout = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
-        const logout = async () => {
+        const handleLogout = async () => {
             try {
-                const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-                if (response.ok) {
-                    alert('Du har loggats ut.');
-                    navigate('/login'); // Omdirigera till inloggningssidan
-                } else {
-                    alert('Utloggning misslyckades. Försök igen.');
-                }
+                await logout();
+                alert('Du har loggats ut.');
+                navigate('/'); // Omdirigera till Homepage efter utloggning
             } catch (error) {
                 console.error('Logout error:', error);
-                alert('Ett fel uppstod vid utloggning.');
+                alert('Utloggning misslyckades.');
             }
         };
 
-        logout();
+        handleLogout();
     }, [navigate]);
 
     return <div>Loggar ut...</div>; // Visar ett meddelande under utloggningen

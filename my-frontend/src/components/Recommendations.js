@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import './Recommendations.css';
 
-const Recommendations = () => {
+const Recommendations = ({ socket }) => {
     const [artist, setArtist] = useState('');
     const [name, setName] = useState('');
     const [recommendations, setRecommendations] = useState([]);
@@ -15,12 +15,10 @@ const Recommendations = () => {
             if (artist) queryParams.append('artist', artist);
             if (name) queryParams.append('name', name);
 
-            console.log('QueryParams sent:', queryParams.toString());
-
-            const response = await fetch(`/api/recommendations?${queryParams}`);
+            const response = await fetch(`/api/recommendations?${queryParams}`, {
+                credentials: 'include',
+            });
             const data = await response.json();
-
-            console.log('Response data:', data);
 
             if (!response.ok) {
                 throw new Error(data.message || 'Misslyckades att hämta rekommendationer');
@@ -28,6 +26,11 @@ const Recommendations = () => {
 
             setRecommendations(data);
             setError('');
+
+            // Skicka WebSocket-meddelande efter rekommendation
+            if (socket && socket.readyState === WebSocket.OPEN) {
+                socket.send(JSON.stringify({ action: 'recommendation', artist, name }));
+            }
         } catch (error) {
             console.error('Error fetching recommendations:', error.message);
             setError(error.message);

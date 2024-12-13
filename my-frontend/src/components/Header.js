@@ -1,21 +1,18 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
+import { logout } from '../services/authService.js'; // Korrekt import
 
 const Header = () => {
     const navigate = useNavigate();
 
     const handleLogout = async () => {
         try {
-            const response = await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
-            if (response.ok) {
-                alert('Du har loggats ut.');
-                navigate('/login');
-            } else {
-                alert('Utloggning misslyckades. Försök igen.');
-            }
+            await logout();
+            alert('Du har loggats ut.');
+            navigate('/'); // Omdirigera till Homepage efter utloggning
         } catch (error) {
             console.error('Logout error:', error);
-            alert('Ett fel uppstod vid utloggning.');
+            alert('Utloggning misslyckades.');
         }
     };
 

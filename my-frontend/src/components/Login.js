@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { login } from '../services/authService.js';
 import { useNavigate } from 'react-router-dom';
-import { login } from '../session.js';
 
 const Login = () => {
     const [username, setUsername] = useState('');
@@ -8,10 +8,16 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
+    // Rensa formulärfälten vid inladdning
+    useEffect(() => {
+        setUsername('');
+        setPassword('');
+    }, []);
+
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await login(username, password); // Använd login-funktionen
+            const response = await login(username, password);
             setMessage(`Välkommen, ${response.user.username}`);
             navigate('/tracks'); // Navigera till Tracks efter lyckad inloggning
         } catch (error) {
@@ -20,7 +26,7 @@ const Login = () => {
     };
 
     return (
-        <div className="login-container">
+        <div>
             <h2>Logga in</h2>
             <form onSubmit={handleLogin}>
                 <input
@@ -29,6 +35,7 @@ const Login = () => {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     required
+                    autoComplete="username"
                 />
                 <input
                     type="password"
@@ -36,6 +43,7 @@ const Login = () => {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     required
+                    autoComplete="current-password"
                 />
                 <button type="submit">Logga in</button>
             </form>

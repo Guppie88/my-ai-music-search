@@ -1,8 +1,17 @@
+import jwt from 'jsonwebtoken';
+
 export const requireLogin = (req, res, next) => {
-    console.log('Session vid skyddad route:', req.session); // Logga sessionen för felsökning
-    if (req.session && req.session.user) {
+    const token = req.cookies.session_id;
+
+    if (!token) {
+        return res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        req.user = decoded;
         next();
-    } else {
-        res.status(401).json({ error: 'Unauthorized. Please log in.' });
+    } catch (err) {
+        res.status(401).json({ error: 'Invalid or expired token.' });
     }
 };

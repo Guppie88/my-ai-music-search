@@ -28,6 +28,7 @@ const Search = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                credentials: 'include', // Skicka cookies med förfrågan
             });
 
             if (response.status === 404) {
@@ -53,6 +54,7 @@ const Search = () => {
 
     return (
         <div className="search-container">
+            <h2>Sök</h2>
             <input
                 type="text"
                 placeholder="Sök efter låtnamn..."

@@ -1,35 +1,22 @@
 import React, { useState } from 'react';
+import { register } from '../services/authService.js';
+import { useNavigate } from 'react-router-dom';
 
 const Register = () => {
-    const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+    const [username, setUsername] = useState('');
+    const [email, setEmail] = useState('');
+    const [password, setPassword] = useState('');
     const [message, setMessage] = useState('');
+    const navigate = useNavigate();
 
-    const handleChange = (e) => {
-        setFormData({ ...formData, [e.target.name]: e.target.value });
-    };
-
-    const handleSubmit = async (e) => {
+    const handleRegister = async (e) => {
         e.preventDefault();
-        setMessage('');
-
-        if (!formData.username || !formData.email || !formData.password) {
-            return setMessage('Alla fält är obligatoriska.');
-        }
-
         try {
-            const response = await fetch('/api/users/register', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(formData),
-            });
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                throw new Error(data.error || 'Misslyckades att registrera användare');
-            }
-
-            setMessage('Registreringen lyckades! Du kan nu logga in.');
+            await register(username, email, password);
+            setMessage('Registrering lyckades! Du omdirigeras till inloggningssidan...');
+            setTimeout(() => {
+                navigate('/login'); // Navigera till inloggningssidan efter 2 sekunder
+            }, 2000);
         } catch (error) {
             setMessage(error.message);
         }
@@ -38,29 +25,26 @@ const Register = () => {
     return (
         <div>
             <h2>Registrera dig</h2>
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleRegister}>
                 <input
                     type="text"
-                    name="username"
                     placeholder="Användarnamn"
-                    value={formData.username}
-                    onChange={handleChange}
+                    value={username}
+                    onChange={(e) => setUsername(e.target.value)}
                     required
                 />
                 <input
                     type="email"
-                    name="email"
                     placeholder="E-post"
-                    value={formData.email}
-                    onChange={handleChange}
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     required
                 />
                 <input
                     type="password"
-                    name="password"
                     placeholder="Lösenord"
-                    value={formData.password}
-                    onChange={handleChange}
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     required
                 />
                 <button type="submit">Registrera</button>
