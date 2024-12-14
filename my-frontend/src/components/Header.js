@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { logout } from '../services/authService.js'; // Korrekt import
+import { logout } from '../services/authService.js'; // Korrekt import av logout-funktionen
 
 const Header = () => {
     const navigate = useNavigate();

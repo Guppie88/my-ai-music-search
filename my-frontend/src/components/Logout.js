@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { logout } from '../services/authService.js'; // Importera din logout-funktion
+import { logout } from '../services/authService.js';
 
 const Logout = () => {
     const navigate = useNavigate();
@@ -20,7 +20,7 @@ const Logout = () => {
         handleLogout();
     }, [navigate]);
 
-    return <div>Loggar ut...</div>; // Visar ett meddelande under utloggningen
+    return <div>Loggar ut...</div>;
 };
 
 export default Logout;

@@ -85,10 +85,33 @@ export const loginUser = async (req, res) => {
 // Utloggningsfunktion
 export const logoutUser = (req, res) => {
     try {
+        // Rensa session-cookien
         res.clearCookie('session_id');
         res.status(200).json({ message: 'Utloggning lyckades' });
     } catch (error) {
         console.error('Logout error:', error);
         res.status(500).json({ error: 'Utloggning misslyckades' });
+    }
+};
+
+// Verifiera användarens autentisering
+export const verifyUser = (req, res) => {
+    try {
+        const token = req.cookies.session_id;
+
+        if (!token) {
+            return res.status(401).json({ error: 'Ingen token tillgänglig' });
+        }
+
+        jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+            if (err) {
+                return res.status(401).json({ error: 'Ogiltig token' });
+            }
+
+            res.status(200).json({ message: 'Användaren är autentiserad', user: decoded });
+        });
+    } catch (error) {
+        console.error('Verify error:', error);
+        res.status(500).json({ error: 'Serverfel vid verifiering' });
     }
 };

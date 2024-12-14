@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+// src/components/Register.js
+import React, { useState, useEffect } from 'react';
 import { register } from '../services/authService.js';
 import { useNavigate } from 'react-router-dom';
 
@@ -9,16 +10,33 @@ const Register = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
+    // Rensa formulärfälten vid inladdning och när man lämnar sidan
+    useEffect(() => {
+        setUsername('');
+        setEmail('');
+        setPassword('');
+
+        return () => {
+            setUsername('');
+            setEmail('');
+            setPassword('');
+        };
+    }, []);
+
     const handleRegister = async (e) => {
         e.preventDefault();
         try {
             await register(username, email, password);
             setMessage('Registrering lyckades! Du omdirigeras till inloggningssidan...');
+            setUsername('');
+            setEmail('');
+            setPassword('');
             setTimeout(() => {
                 navigate('/login'); // Navigera till inloggningssidan efter 2 sekunder
             }, 2000);
         } catch (error) {
-            setMessage(error.message);
+            console.error('Register error:', error);
+            setMessage(error.message || 'Registrering misslyckades');
         }
     };
 

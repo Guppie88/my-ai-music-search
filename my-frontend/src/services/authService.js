@@ -58,7 +58,7 @@ export const logout = async () => {
 
         const response = await fetch(`${API_URL}/logout`, {
             method: 'POST',
-            credentials: 'include', // Skickar cookies med begäran
+            credentials: 'include',
         });
 
         const data = await response.json();
@@ -72,5 +72,20 @@ export const logout = async () => {
     } catch (error) {
         console.error('Logout error:', error);
         throw error;
+    }
+};
+
+// Kontrollera om användaren är autentiserad
+export const isAuthenticated = async () => {
+    try {
+        const response = await fetch(`${API_URL}/verify`, {
+            method: 'GET',
+            credentials: 'include',
+        });
+
+        return response.ok;
+    } catch (error) {
+        console.error('Auth verification error:', error);
+        return false;
     }
 };

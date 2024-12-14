@@ -1,3 +1,4 @@
+// src/components/Login.js
 import React, { useState, useEffect } from 'react';
 import { login } from '../services/authService.js';
 import { useNavigate } from 'react-router-dom';
@@ -8,20 +9,29 @@ const Login = () => {
     const [message, setMessage] = useState('');
     const navigate = useNavigate();
 
-    // Rensa formulärfälten vid inladdning
+    // Rensa formulärfälten vid inladdning och när man lämnar sidan
     useEffect(() => {
         setUsername('');
         setPassword('');
+
+        return () => {
+            setUsername('');
+            setPassword('');
+        };
     }, []);
 
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
             const response = await login(username, password);
+            console.log('Serverrespons vid inloggning:', response);
             setMessage(`Välkommen, ${response.user.username}`);
+            setUsername('');
+            setPassword('');
             navigate('/tracks'); // Navigera till Tracks efter lyckad inloggning
         } catch (error) {
-            setMessage(error.message);
+            console.error('Login error:', error);
+            setMessage(error.message || 'Inloggning misslyckades');
         }
     };
 
