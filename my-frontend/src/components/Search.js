@@ -8,6 +8,25 @@ const Search = () => {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
 
+    // Funktion för att spara sökningen i sökhistoriken
+    const saveSearch = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/searchHistory/search/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include', // Skicka cookies med förfrågan
+                body: JSON.stringify({ artist: artistQuery, name: nameQuery }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Misslyckades att spara sökhistorik');
+            }
+        } catch (err) {
+            console.error('Error saving search:', err.message);
+        }
+    };
+
+    // Funktion för att hantera sökningen
     const handleSearch = async () => {
         if (!nameQuery.trim() && !artistQuery.trim()) {
             setError('Please enter a song name or artist.');
@@ -28,7 +47,7 @@ const Search = () => {
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                credentials: 'include', // Skicka cookies med förfrågan
+                credentials: 'include',
             });
 
             if (response.status === 404) {
@@ -44,6 +63,9 @@ const Search = () => {
             const data = await response.json();
             console.log('Search API Response:', data);
             setResults(data.tracks || []);
+
+            // Spara sökningen i sökhistoriken efter en lyckad sökning
+            await saveSearch();
         } catch (err) {
             setError(err.message);
             console.error('Search Error:', err);

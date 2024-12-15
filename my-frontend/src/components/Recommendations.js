@@ -8,6 +8,57 @@ const Recommendations = ({ socket }) => {
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
 
+    // Funktion för att spara sökningen i sökhistoriken
+    const saveSearch = async () => {
+        try {
+            const response = await fetch('http://localhost:5000/api/searchHistory/save', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ artist, name }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Misslyckades att spara sökhistorik');
+            }
+        } catch (error) {
+            console.error('Error saving search:', error.message);
+            setError('Misslyckades att spara sökhistorik');
+        }
+    };
+
+    // Funktion för att hämta personliga rekommendationer
+    const fetchPersonalRecommendations = async () => {
+        setLoading(true);
+        try {
+            const response = await fetch('http://localhost:5000/api/searchHistory/personal', {
+                method: 'GET',
+                credentials: 'include',
+            });
+            const data = await response.json();
+
+            if (!response.ok) {
+                throw new Error(data.message || 'Misslyckades att hämta personliga rekommendationer');
+            }
+
+            setRecommendations(data);
+            setError('');
+        } catch (error) {
+            console.error('Error fetching personal recommendations:', error.message);
+            setError(error.message);
+            setRecommendations([]);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // Funktion för att hantera sökningen: spara sökningen och hämta personliga rekommendationer
+    const handleSearch = async () => {
+        await saveSearch();
+        await fetchPersonalRecommendations();
+    };
+
+    // Funktion för att hämta generella rekommendationer
     const fetchRecommendations = async () => {
         setLoading(true);
         try {
@@ -15,7 +66,7 @@ const Recommendations = ({ socket }) => {
             if (artist) queryParams.append('artist', artist);
             if (name) queryParams.append('name', name);
 
-            const response = await fetch(`/api/recommendations?${queryParams}`, {
+            const response = await fetch(`http://localhost:5000/api/recommendations?${queryParams}`, {
                 credentials: 'include',
             });
             const data = await response.json();
@@ -57,6 +108,9 @@ const Recommendations = ({ socket }) => {
             />
             <button onClick={fetchRecommendations} disabled={loading}>
                 {loading ? 'Laddar...' : 'Hämta rekommendationer'}
+            </button>
+            <button onClick={handleSearch} disabled={loading}>
+                {loading ? 'Laddar...' : 'Hämta personliga rekommendationer'}
             </button>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             {recommendations.length > 0 && (
