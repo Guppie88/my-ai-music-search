@@ -1,3 +1,4 @@
+// src/components/ProtectedRoute.js
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import { isAuthenticated } from '../services/authService.js';

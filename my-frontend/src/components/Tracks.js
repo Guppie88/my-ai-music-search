@@ -1,4 +1,6 @@
+// src/components/Tracks.js
 import React, { useEffect, useState } from 'react';
+import './Tracks.css';
 
 const Tracks = () => {
     const [tracks, setTracks] = useState([]); // Lista med tracks
@@ -11,7 +13,7 @@ const Tracks = () => {
         setLoading(true);
         setError('');
         try {
-            const response = await fetch(`/api/data/tracks?page=${page}&limit=10`);
+            const response = await fetch(`http://localhost:5000/api/data/tracks?page=${page}&limit=10`);
             if (!response.ok) {
                 throw new Error(`Failed to fetch tracks: ${response.statusText}`);
             }
@@ -32,28 +34,34 @@ const Tracks = () => {
     }, [page]); // Anropa `fetchTracks` när `page` ändras
 
     return (
-        <div>
-            <h2>Tracks</h2>
-            {error && <p style={{ color: 'red' }}>{error}</p>}
+        <div className="tracks-container">
+            <h2 className="tracks-title">Tracks</h2>
+            {error && <p className="error-message">{error}</p>}
             {loading ? (
-                <p>Loading...</p>
+                <p className="loading-message">Loading...</p>
             ) : (
                 <div>
-                    <ul>
+                    <ul className="tracks-list">
                         {tracks.map((track) => (
-                            <li key={track._id}>
-                                {track.name} - {track.artists?.join(', ')} (Popularity: {track.popularity})
+                            <li key={track._id} className="track-item">
+                                <strong>{track.name}</strong> - {track.artists?.join(', ')}{' '}
+                                <span className="track-popularity">(Popularity: {track.popularity})</span>
                             </li>
                         ))}
                     </ul>
-                    <div>
-                        <button onClick={() => setPage((prev) => Math.max(prev - 1, 1))} disabled={page === 1}>
+                    <div className="pagination">
+                        <button
+                            className="pagination-button"
+                            onClick={() => setPage((prev) => Math.max(prev - 1, 1))}
+                            disabled={page === 1}
+                        >
                             Previous
                         </button>
-                        <span>
+                        <span className="pagination-info">
                             Page {page} of {totalPages}
                         </span>
                         <button
+                            className="pagination-button"
                             onClick={() => setPage((prev) => (prev < totalPages ? prev + 1 : prev))}
                             disabled={page === totalPages}
                         >

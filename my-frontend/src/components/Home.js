@@ -1,3 +1,4 @@
+// src/components/Home.js
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Home.css';
@@ -17,8 +18,8 @@ const Home = () => {
                     <h1>Välkommen till My AI Music Search</h1>
                     <p>Hitta dina favoritlåtar och få personliga rekommendationer!</p>
                     <div className="hero-buttons">
-                        <button onClick={() => navigate('/login')}>Logga in</button>
-                        <button onClick={() => navigate('/register')}>Registrera dig</button>
+                        <button className="primary-btn" onClick={() => navigate('/login')}>Logga in</button>
+                        <button className="secondary-btn" onClick={() => navigate('/register')}>Registrera dig</button>
                     </div>
                 </div>
             </div>

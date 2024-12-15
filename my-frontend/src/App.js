@@ -9,28 +9,27 @@ import Login from './components/Login.js';
 import Register from './components/Register.js';
 import Logout from './components/Logout.js';
 import Header from './components/Header.js';
+import UserProfile from './components/UserProfile.js';
 import ProtectedRoute from './components/ProtectedRoute.js';
-import { isAuthenticated } from './services/authService.js';
 
 const App = () => {
     return (
         <Router>
-            <>
-                {isAuthenticated() && <Header />} {/* Visa Header endast om användaren är autentiserad */}
-                <Routes>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/logout" element={<Logout />} />
+            <Header />
+            <Routes>
+                <Route path="/" element={<Home />} />
+                <Route path="/login" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/profile" element={<UserProfile />} />
 
-                    {/* Skyddade routes */}
-                    <Route element={<ProtectedRoute redirectPath="/login" />}>
-                        <Route path="/search" element={<Search />} />
-                        <Route path="/tracks" element={<Tracks />} />
-                        <Route path="/recommendations" element={<Recommendations />} />
-                    </Route>
-                </Routes>
-            </>
+                {/* Skyddade routes */}
+                <Route element={<ProtectedRoute redirectPath="/login" />}>
+                    <Route path="/search" element={<Search />} />
+                    <Route path="/tracks" element={<Tracks />} />
+                    <Route path="/recommendations" element={<Recommendations />} />
+                </Route>
+            </Routes>
         </Router>
     );
 };
