@@ -9,18 +9,24 @@ const Search = () => {
     const [error, setError] = useState('');
 
     // Funktion för att spara sökningen i sökhistoriken
-    const saveSearch = async () => {
+    const saveSearch = async (tracks) => {
         try {
-            const response = await fetch('http://localhost:5000/api/searchHistory/search/save', {
+            console.log('Saving search with tracks:', tracks);
+            console.log('Saving search with artist:', artistQuery);
+            console.log('Saving search with name:', nameQuery);
+
+            const response = await fetch('http://localhost:5000/api/searchHistory/save', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                credentials: 'include', // Skicka cookies med förfrågan
-                body: JSON.stringify({ artist: artistQuery, name: nameQuery }),
+                credentials: 'include',
+                body: JSON.stringify({ tracks, artist: artistQuery, name: nameQuery }),
             });
 
             if (!response.ok) {
                 throw new Error('Misslyckades att spara sökhistorik');
             }
+
+            console.log('Search successfully saved to history');
         } catch (err) {
             console.error('Error saving search:', err.message);
         }
@@ -42,6 +48,8 @@ const Search = () => {
             if (nameQuery.trim()) queryParams.append('name', nameQuery.trim());
             if (artistQuery.trim()) queryParams.append('artist', artistQuery.trim());
 
+            console.log('Fetching search results with params:', queryParams.toString());
+
             const response = await fetch(`/api/search/tracks?${queryParams.toString()}`, {
                 method: 'GET',
                 headers: {
@@ -49,11 +57,6 @@ const Search = () => {
                 },
                 credentials: 'include',
             });
-
-            if (response.status === 404) {
-                setError('Inga låtar eller artister matchade din sökning.');
-                return;
-            }
 
             if (!response.ok) {
                 const errorText = await response.text();
@@ -65,7 +68,7 @@ const Search = () => {
             setResults(data.tracks || []);
 
             // Spara sökningen i sökhistoriken efter en lyckad sökning
-            await saveSearch();
+            await saveSearch(data.tracks);
         } catch (err) {
             setError(err.message);
             console.error('Search Error:', err);

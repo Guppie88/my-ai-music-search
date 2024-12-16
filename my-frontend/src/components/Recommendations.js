@@ -7,6 +7,8 @@ const Recommendations = ({ socket }) => {
     const [recommendations, setRecommendations] = useState([]);
     const [error, setError] = useState('');
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1); // Sidnummer
+    const limit = 10; // Antal rekommendationer per sida
 
     // Funktion för att spara sökningen i sökhistoriken
     const saveSearch = async () => {
@@ -27,21 +29,26 @@ const Recommendations = ({ socket }) => {
         }
     };
 
-    // Funktion för att hämta personliga rekommendationer
+    // Funktion för att hämta personliga rekommendationer med paginering
     const fetchPersonalRecommendations = async () => {
         setLoading(true);
         try {
-            const response = await fetch('http://localhost:5000/api/searchHistory/personal', {
+            const queryParams = new URLSearchParams();
+            queryParams.append('page', page);
+            queryParams.append('limit', limit);
+
+            const response = await fetch(`http://localhost:5000/api/searchHistory/personal?${queryParams}`, {
                 method: 'GET',
                 credentials: 'include',
             });
+
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(data.message || 'Misslyckades att hämta personliga rekommendationer');
             }
 
-            setRecommendations(data);
+            setRecommendations(data.tracks || []);
             setError('');
         } catch (error) {
             console.error('Error fetching personal recommendations:', error.message);
@@ -58,17 +65,20 @@ const Recommendations = ({ socket }) => {
         await fetchPersonalRecommendations();
     };
 
-    // Funktion för att hämta generella rekommendationer
+    // Funktion för att hämta generella rekommendationer med paginering
     const fetchRecommendations = async () => {
         setLoading(true);
         try {
             const queryParams = new URLSearchParams();
             if (artist) queryParams.append('artist', artist);
             if (name) queryParams.append('name', name);
+            queryParams.append('page', page);
+            queryParams.append('limit', limit);
 
             const response = await fetch(`http://localhost:5000/api/recommendations?${queryParams}`, {
                 credentials: 'include',
             });
+
             const data = await response.json();
 
             if (!response.ok) {
@@ -112,6 +122,32 @@ const Recommendations = ({ socket }) => {
             <button onClick={handleSearch} disabled={loading}>
                 {loading ? 'Laddar...' : 'Hämta personliga rekommendationer'}
             </button>
+            <div className="pagination-buttons">
+                <button
+                    onClick={() => {
+                        setPage((prev) => {
+                            const newPage = Math.max(prev - 1, 1);
+                            fetchRecommendations();
+                            return newPage;
+                        });
+                    }}
+                    disabled={page === 1}
+                >
+                    Föregående
+                </button>
+                <span>Sida {page}</span>
+                <button
+                    onClick={() => {
+                        setPage((prev) => {
+                            const newPage = prev + 1;
+                            fetchRecommendations();
+                            return newPage;
+                        });
+                    }}
+                >
+                    Nästa
+                </button>
+            </div>
             {error && <p style={{ color: 'red' }}>{error}</p>}
             {recommendations.length > 0 && (
                 <ul>

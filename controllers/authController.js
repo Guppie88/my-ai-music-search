@@ -1,28 +1,25 @@
-import bcrypt from 'bcrypt';
+import User from '../models/userModel.js';
 import jwt from 'jsonwebtoken';
-import User from '../models/UserModel.js';
+import bcrypt from 'bcrypt';
 import { v4 as uuidv4 } from 'uuid';
 
-// Registreringsfunktion
+// Registrera användare
 export const registerUser = async (req, res) => {
-    const { username, email, password } = req.body;
-
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'Alla fält är obligatoriska' });
-    }
-
     try {
-        // Kontrollera om användaren redan finns
+        const { username, email, password } = req.body;
+
+        if (!username || !email || !password) {
+            return res.status(400).json({ error: 'Alla fält är obligatoriska' });
+        }
+
         const existingUser = await User.findOne({ email });
         if (existingUser) {
             return res.status(400).json({ error: 'E-postadressen används redan' });
         }
 
-        // Hasha lösenordet
         const hashedPassword = await bcrypt.hash(password, 10);
         console.log('Hashat lösenord vid registrering:', hashedPassword);
 
-        // Skapa en ny användare med ett genererat UUID för id
         const newUser = new User({
             id: uuidv4(),
             username,
@@ -38,36 +35,29 @@ export const registerUser = async (req, res) => {
     }
 };
 
-// Inloggningsfunktion
+// Logga in användare
 export const loginUser = async (req, res) => {
-    const { username, password } = req.body;
-
-    if (!username || !password) {
-        return res.status(400).json({ error: 'Användarnamn och lösenord krävs' });
-    }
-
     try {
-        // Hitta användaren i databasen
-        const user = await User.findOne({ username });
+        const { email, username, password } = req.body;
+
+        if ((!email && !username) || !password) {
+            return res.status(400).json({ error: 'E-post/Användarnamn och lösenord krävs' });
+        }
+
+        const user = await User.findOne({ $or: [{ email }, { username }] });
         if (!user) {
-            return res.status(400).json({ error: 'Ogiltiga inloggningsuppgifter' });
+            return res.status(401).json({ error: 'Felaktiga inloggningsuppgifter' });
         }
 
         console.log('Angett lösenord:', password);
         console.log('Hashat lösenord i databasen:', user.password);
 
-        // Jämför lösenordet med det hashade lösenordet i databasen
         const isMatch = await bcrypt.compare(password, user.password);
-        console.log('Lösenordsjämförelse resultat:', isMatch);
-
         if (!isMatch) {
-            return res.status(400).json({ error: 'Ogiltiga inloggningsuppgifter' });
+            return res.status(401).json({ error: 'Felaktiga inloggningsuppgifter' });
         }
 
-        // Skapa JWT-token
         const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-        // Sätt en cookie med JWT-token
         res.cookie('session_id', token, {
             httpOnly: true,
             secure: process.env.NODE_ENV === 'production',
@@ -82,10 +72,9 @@ export const loginUser = async (req, res) => {
     }
 };
 
-// Utloggningsfunktion
+// Logga ut användare
 export const logoutUser = (req, res) => {
     try {
-        // Rensa session-cookien
         res.clearCookie('session_id');
         res.status(200).json({ message: 'Utloggning lyckades' });
     } catch (error) {

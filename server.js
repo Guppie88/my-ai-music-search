@@ -13,7 +13,7 @@ import aiRoutes from './routes/aiRoutes.js';
 import trackRoutes from './routes/trackRoutes.js';
 import recommendationRoutes from './routes/recommendationRoutes.js';
 import searchRoutes from './routes/searchRoutes.js';
-import searchHistoryRoutes from './routes/searchHistoryRoutes.js'; // Ny import för sökhistorik-routes
+import searchHistoryRoutes from './routes/searchHistoryRoutes.js';
 
 dotenv.config();
 
@@ -22,7 +22,9 @@ const PORT = process.env.PORT || 5000;
 const FRONTEND_URLS = ['http://localhost:3000', 'http://localhost:8080'];
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); // Öka payload-gränsen till 50 MB
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
+
 app.use(cors({
     credentials: true,
     origin: FRONTEND_URLS,
@@ -52,14 +54,17 @@ app.use('/api/ai', aiRoutes);
 app.use('/api/data', trackRoutes);
 app.use('/api/recommendations', recommendationRoutes);
 app.use('/api/search', searchRoutes);
-app.use('/api/searchHistory', searchHistoryRoutes); // Ny route för sökhistorik
+app.use('/api/searchHistory', searchHistoryRoutes);
 
 // Serve statiska filer för frontend
 const __dirname = path.resolve();
 app.use(express.static(path.join(__dirname, 'my-frontend/public')));
 
-// Fallback för att hantera frontend-rutter med React Router
+// Fallback för att hantera frontend-rutter och undvika att API-förfrågningar returnerar index.html
 app.get('*', (req, res) => {
+    if (req.originalUrl.startsWith('/api')) {
+        return res.status(404).json({ message: 'API-routen hittades inte' });
+    }
     res.sendFile(path.join(__dirname, 'my-frontend/public', 'index.html'));
 });
 
