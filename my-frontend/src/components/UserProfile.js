@@ -1,72 +1,76 @@
-// src/components/UserProfile.js
 import React, { useState, useEffect } from 'react';
 import './UserProfile.css';
 
 const UserProfile = () => {
     const [profileImage, setProfileImage] = useState('');
-    const [username, setUsername] = useState('Användare');
+    const [username, setUsername] = useState('');
     const [registrationDate, setRegistrationDate] = useState('');
     const [themeColor, setThemeColor] = useState(localStorage.getItem('themeColor') || '#007bff');
-    const [uploadProgress, setUploadProgress] = useState(0);
+    const [error, setError] = useState('');
 
-    // Hämta användarens data vid inläsning av komponenten
     useEffect(() => {
-        const fetchUserData = async () => {
+        // Hämta användardata vid sidladdning
+        const fetchUserProfile = async () => {
             try {
                 const response = await fetch('http://localhost:5000/api/users/profile', {
                     method: 'GET',
                     credentials: 'include',
                 });
+                const data = await response.json();
 
                 if (!response.ok) {
-                    throw new Error('Misslyckades att hämta användardata');
+                    throw new Error(data.message || 'Misslyckades att hämta användarprofil');
                 }
 
-                const data = await response.json();
                 setUsername(data.username);
                 setRegistrationDate(new Date(data.registrationDate).toLocaleDateString());
                 setProfileImage(data.profileImage);
             } catch (error) {
-                console.error('Error fetching user data:', error.message);
+                console.error('Error fetching user profile:', error.message);
+                setError(error.message);
             }
         };
 
-        fetchUserData();
+        fetchUserProfile();
     }, []);
 
-    // Funktion för att hantera profilbilds-uppladdning med progress bar
-    const handleImageUpload = (event) => {
+    // Funktion för att hantera profilbilds-uppladdning
+    const handleImageUpload = async (event) => {
         const file = event.target.files[0];
         const reader = new FileReader();
 
-        reader.onloadstart = () => setUploadProgress(0);
-
-        reader.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const percentComplete = Math.round((event.loaded / event.total) * 100);
-                setUploadProgress(percentComplete);
-            }
-        };
-
         reader.onloadend = async () => {
-            setProfileImage(reader.result);
-            setUploadProgress(100);
-
             try {
-                await fetch('http://localhost:5000/api/users/profile', {
+                const response = await fetch('http://localhost:5000/api/users/updateProfileImage', {
                     method: 'PUT',
                     headers: { 'Content-Type': 'application/json' },
                     credentials: 'include',
                     body: JSON.stringify({ profileImage: reader.result }),
                 });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.error || 'Misslyckades att uppdatera profilbild');
+                }
+
+                setProfileImage(reader.result);
             } catch (error) {
                 console.error('Error updating profile image:', error.message);
+                setError(error.message);
             }
         };
 
         if (file) {
             reader.readAsDataURL(file);
         }
+    };
+
+    // Funktion för att ändra tema
+    const handleThemeChange = (event) => {
+        const color = event.target.value;
+        setThemeColor(color);
+        localStorage.setItem('themeColor', color);
     };
 
     return (
@@ -80,17 +84,14 @@ const UserProfile = () => {
                         <div className="placeholder">Ingen bild</div>
                     )}
                     <input type="file" accept="image/*" onChange={handleImageUpload} />
-                    {uploadProgress > 0 && uploadProgress < 100 && (
-                        <div className="progress-bar">
-                            <div className="progress" style={{ width: `${uploadProgress}%` }}></div>
-                        </div>
-                    )}
                 </div>
                 <h2>Välkommen, {username}!</h2>
-                <p>Medlemskap: <strong>Medlem</strong></p>
-                <p>Medlem sedan: <strong>{registrationDate}</strong></p>
-                <label>Välj temafärg:</label>
-                <input type="color" value={themeColor} onChange={(e) => setThemeColor(e.target.value)} />
+                <p>Medlemskap sedan: {registrationDate}</p>
+                <div className="theme-section">
+                    <label>Välj temafärg:</label>
+                    <input type="color" value={themeColor} onChange={handleThemeChange} />
+                </div>
+                {error && <p className="error">{error}</p>}
             </div>
         </div>
     );

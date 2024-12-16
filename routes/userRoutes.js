@@ -1,4 +1,3 @@
-// src/routes/userRoutes.js
 import express from 'express';
 import { requireLogin } from '../middlewares/requireLogin.js';
 import User from '../models/userModel.js';
@@ -36,6 +35,26 @@ router.get('/me', requireLogin, async (req, res) => {
     } catch (error) {
         console.error('Error fetching user data:', error);
         res.status(500).json({ error: 'Serverfel vid hämtning av användardata' });
+    }
+});
+
+// Uppdatera användarens profilbild
+router.put('/updateProfileImage', requireLogin, async (req, res) => {
+    try {
+        const { profileImage } = req.body;
+        const user = await User.findById(req.user.id);
+
+        if (!user) {
+            return res.status(404).json({ message: 'Användaren hittades inte' });
+        }
+
+        user.profileImage = profileImage;
+        await user.save();
+
+        res.status(200).json({ message: 'Profilbilden har uppdaterats', profileImage: user.profileImage });
+    } catch (error) {
+        console.error('Error updating profile image:', error);
+        res.status(500).json({ error: 'Misslyckades att uppdatera profilbild' });
     }
 });
 
